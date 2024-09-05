@@ -17,6 +17,7 @@ namespace System.Threading
         private static readonly List<PollableHolder> s_pollables = new();
         private static bool s_checkScheduled;
         private static Pollable? s_resolvedPollable;
+        private static Task? s_mainTask;
 
         internal static Task RegisterWasiPollableHandle(int handle, CancellationToken cancellationToken)
         {
@@ -40,6 +41,7 @@ namespace System.Threading
 
         internal static T PollWasiEventLoopUntilResolved<T>(Task<T> mainTask)
         {
+            s_mainTask = mainTask;
             while (!mainTask.IsCompleted)
             {
                 ThreadPoolWorkQueue.Dispatch();
@@ -56,6 +58,7 @@ namespace System.Threading
 
         internal static void PollWasiEventLoopUntilResolvedVoid(Task mainTask)
         {
+            s_mainTask = mainTask;
             while (!mainTask.IsCompleted)
             {
                 ThreadPoolWorkQueue.Dispatch();
@@ -113,7 +116,7 @@ namespace System.Threading
                 // if there is CPU-bound work to do, we should not block on PollInterop.Poll below
                 // so we will append pollable resolved in 0ms
                 // in effect, the PollInterop.Poll would not block us
-                if (ThreadPool.PendingWorkItemCount > 0)
+                if (ThreadPool.PendingWorkItemCount > 0 || (s_mainTask != null && s_mainTask.IsCompleted))
                 {
                     s_resolvedPollable ??= MonotonicClockInterop.SubscribeDuration(0);
                     resolvedPollableIndex = pending.Count;
