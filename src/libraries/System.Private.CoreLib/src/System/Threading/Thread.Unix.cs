@@ -22,7 +22,7 @@ namespace System.Threading
         {
             while (!mainTask.IsCompleted)
             {
-                WasiEventLoop.DispatchWasiEventLoop();
+                ThreadPoolWorkQueue.Dispatch();
             }
             var exception = mainTask.Exception;
             if (exception is not null)
@@ -35,7 +35,7 @@ namespace System.Threading
 
         internal static void DispatchWasiEventLoop()
         {
-            WasiEventLoop.DispatchWasiEventLoop();
+            ThreadPoolWorkQueue.Dispatch();
         }
 #endif
 
