@@ -46,6 +46,7 @@ namespace System.Threading
             {
                 ThreadPoolWorkQueue.Dispatch();
             }
+            s_mainTask = null;
 
             var exception = mainTask.Exception;
             if (exception is not null)
@@ -63,6 +64,7 @@ namespace System.Threading
             {
                 ThreadPoolWorkQueue.Dispatch();
             }
+            s_mainTask = null;
 
             var exception = mainTask.Exception;
             if (exception is not null)
