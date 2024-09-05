@@ -121,19 +121,10 @@ namespace LibraryWorld
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            var task = TestHttpAsync(port);
-            while (!task.IsCompleted)
-            {
-                WasiEventLoop.DispatchWasiEventLoop();
-            }
-            var exception = task.Exception;
-            if (exception is not null)
-            {
-                throw exception;
-            }
+            WasiEventLoop.PollWasiEventLoopUntilResolved(TestHttpAsync(port));
 
             stopwatch.Stop();
-            // Verify that `WasiEventLoop.DispatchWasiEventLoop` returned
+            // Verify that `WasiEventLoop.PollWasiEventLoopUntilResolved` returned
             // promptly once the main task finished, even if there were other
             // tasks (e.g. the default 100 second HttpClient timeout) still in
             // progress.
@@ -234,12 +225,12 @@ namespace LibraryWorld
 
     internal static class WasiEventLoop
     {
-        internal static void DispatchWasiEventLoop()
+        internal static void PollWasiEventLoopUntilResolved(Task mainTask)
         {
-            CallDispatchWasiEventLoop((Thread)null!);
+            PollWasiEventLoopUntilResolvedVoid((Thread)null!, mainTask);
 
-            [UnsafeAccessor(UnsafeAccessorKind.StaticMethod, Name = "DispatchWasiEventLoop")]
-            static extern void CallDispatchWasiEventLoop(Thread t);
+            [UnsafeAccessor(UnsafeAccessorKind.StaticMethod, Name = "PollWasiEventLoopUntilResolvedVoid")]
+            static extern void PollWasiEventLoopUntilResolvedVoid(Thread t, Task mainTask);
         }
     }
 }

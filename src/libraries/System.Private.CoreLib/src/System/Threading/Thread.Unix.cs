@@ -18,7 +18,7 @@ namespace System.Threading
             return WasiEventLoop.RegisterWasiPollableHandle(handle, cancellationToken);
         }
 
-        internal static int PollWasiEventLoopUntilResolved(Task<int> mainTask)
+        internal static T PollWasiEventLoopUntilResolved<T>(Task<T> mainTask)
         {
             while (!mainTask.IsCompleted)
             {
@@ -33,9 +33,17 @@ namespace System.Threading
             return mainTask.Result;
         }
 
-        internal static void DispatchWasiEventLoop()
+        internal static void PollWasiEventLoopUntilResolvedVoid(Task mainTask)
         {
-            ThreadPoolWorkQueue.Dispatch();
+            while (!mainTask.IsCompleted)
+            {
+                ThreadPoolWorkQueue.Dispatch();
+            }
+            var exception = mainTask.Exception;
+            if (exception is not null)
+            {
+                throw exception;
+            }
         }
 #endif
 
