@@ -27,7 +27,7 @@ if (isMainThread) {
     // Spawn a worker thread to run the HTTP server and feed the port number
     // it's listening on back to us when ready:
     const port = await new Promise((resolve, reject) => {
-        const worker = new Worker(new URL("./SharedLibrary.mjs", base));
+        const worker = new Worker(new URL("./SharedLibraryDriver.mjs", base));
         worker.on("message", resolve);
         worker.on("error", reject);
         worker.on("exit", (code) => {
